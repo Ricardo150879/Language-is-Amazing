@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Editor</title>
+    <style>
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+#editor {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 200px;
+    margin-bottom: 10px;
+}
+
+button {
+    margin-right: 5px;
+}
+
+h2, #myH2 { 
+ font-style: oblique;   
+ font-family: "Playfair Display", "Bookman", serif;  
+ color: blue;  
+ letter-spacing:- 0.005em;   
+ word-spacing: 1px;
+}
+
+#myH2 { 
+  position: relative;  
+  padding: 0;  
+  margin: 0; 
+  font-style: normal; 
+  font-family: Arial, Helvetica, sans-serif;  
+  font-weight: 300;  
+  font-size: 40px;  
+  color: navy;   
+  text-align: center;
+
+</style>
+
+<!-- The offical release-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.js"> </script>
+
+</head>
+<body>
+
+<script>
+// script.js
+function format(command) {
+    document.execCommand(command, false, null);
+}
+</script>
+<h2 id="myH2">Use the text editor bellow to your comments</h2>
+    <button onclick="format('bold')">Bold</button>
+    <button onclick="format('italic')">Italic</button>
+    <button onclick="format('underline')">Underline</button>
+    <button onclick="format('strikethrough')">Strikethrough</button>
+    
+    <label for="fontSize"></label>
+    <select id="fontSize" onchange="changeFontSize()">
+        <option value="16px">16px</option>
+        <option value="18px">18px</option>
+        <option value="20px">20px</option>
+        <option value="22px">22px</option>
+        <option value="24px">24px</option>
+        <option value="26px">26px</option>
+        <option value="28px">28px</option>
+        <option value="30px">30px</option>
+        <option value="32px">32px</option>
+        <option value="34px">34px</option>
+        <option value="36px">36px</option>
+    </select>
+    
+    <select id="colorSelect" onchange="changeColor()">
+    <option value="black">Black</option>
+    <option value="red">Red</option>
+    <option value="green">Green</option>
+    <option value="blue">Blue</option>
+    <option value="yellow">Yellow</option>
+    <option value="navy">Navy</option>
+    <option value="purple">Purple</option>
+    <option value="gold">Gold</option>
+    <option value="aqua">Aqua</option>
+    <option value="pink">Pink</option>
+</select>
+    
+    <div id="editor" contenteditable="true"></div>
+
+<script>
+        function changeFontSize() {
+            var fontSize = document.getElementById("fontSize").value;
+            document.getElementById("editor").style.fontSize = fontSize;
+        }
+    </script>
+
+<script>
+function changeColor() {
+    var selectedColor = document.getElementById("colorSelect").value;
+    document.getElementById("editor").style.color = selectedColor;
+}
+</script>
+
+<h2>Some interesting websites for studies</h2>
+
+<a href="https://en.wikipedia.org/wiki/English_grammar" target="_blank"> Wikipedia - English Grammar</a><br>
+<a href="https://dictionary.cambridge.org/grammar/british-grammar/" target="_blank">Cambridge Dictionary - Grammar</a><br>
+<a href="https://phet.colorado.edu/" target="_blank">Interactive Simulations</a><br>
+<a href="https://encyclopedia.pub/" target="_blank">From Scholars for Scholars</a><br>
+<a href="https://www.youtube.com/@khanacademy" target="_blank">Khan Academy - Youtube</a><br>
+
+
+<h2>Open a text file to your studies</h2>
+<input type="file" id="textInput" />
+<div id="textOutput">Upload a text file please</div>
+
+<h2>Open an image file to your studies</h2>
+<input type="file" id="imageInput" />
+<div>Select an image file, please.</div>
+<img id="imageDisplay" />
+<br>
+
+<script>
+  document.getElementById('textInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('textOutput').innerHTML = e.target.result;
+    };
+    reader.readAsText(file);
+  });
+</script>
+
+<script>
+  document.getElementById('imageInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('imageDisplay').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+</script>
+
+
+<h2>Rendered pdf</h2>
+<input type="file" id="file">
+    <canvas id="pdfCanvas" width="300" height="5"></canvas><br>
+
+<script>
+/*Offical release of the pdfjs worker*/
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.js';
+document.getElementById('file').onchange = function(event) {
+  var file = event.target.files[0];
+  var fileReader = new FileReader();
+  fileReader.onload = function() {
+    var typedarray = new Uint8Array(this.result);
+    console.log(typedarray);
+    const loadingTask = pdfjsLib.getDocument(typedarray);
+    loadingTask.promise.then(pdf => {
+      // The document is loaded here...
+      
+      pdf.getPage(1).then(function(page) {
+        console.log('Page loaded');
+      
+
+        var scale = 1.5;
+        var viewport = page.getViewport({
+          scale: scale
+        });
+
+        var canvas = document.getElementById('pdfCanvas');
+        var context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Render PDF page into canvas context
+        var renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        var renderTask = page.render(renderContext);
+        renderTask.promise.then(function() {
+          console.log('Page rendered');
+        });
+
+      });
+    });
+
+  }
+  fileReader.readAsArrayBuffer(file);
+}
+</script>
+
+<h2>Overview through</h2>
+<iframe src="https://en.wikipedia.org/wiki/Main_Page"></iframe>
+<iframe src="https://en.wikiversity.org/wiki/Wikiversity:Main_Page"></iframe><iframe src="https://en.wikibooks.org/wiki/Main_Page"></iframe>
+<br>
+
+<button style="background-color: #271263; color: white; padding: 15px 32px; text-align: center; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;" onclick="printFunction()">Print</button1>
+
+
+<script>
+      function printFunction() { 
+        window.print(); 
+      }
+</script></form>
+    
+</body>
+</html>
